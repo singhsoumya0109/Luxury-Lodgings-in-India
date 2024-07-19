@@ -1,0 +1,292 @@
+<% layout('/layouts/boilerplate') %>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Reviews</title>
+    <style>
+        .image {
+            width: auto;
+            height: auto;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+
+        .form-range {
+            width: 100%;
+        }
+
+        .rating-value {
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .addReview {
+            border: 2px solid black;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        .showReview {
+            border: 2px solid black;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .review-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .review-item {
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        
+
+        .review-rating {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .review-body {
+            margin-top: 2px;
+            font-size: 20px;
+            color: #0c0c0cf7;
+        }
+
+        .review-author {
+            margin-top: 2px;
+            font-size: 13px;
+            color: #0c0c0cf7;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 10px 0;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .button:active {
+            background-color: #004080;
+        }
+
+        .rating-counts {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .rating-counts p {
+            margin: 0 10px;
+        }
+
+        .rating-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .rating-card {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 200px;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .rating-card p {
+            margin: 0px;
+            padding: 0px 0;
+        }
+        
+        .rating-value1 {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .edit-review-form {
+            display: none;
+        }
+        .edit-submit
+        {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1><%= hotel.title %></h1>
+    <h4 class="text-muted"><%= hotel.location %></h4>
+    <img class="image" src="<%= hotel.image %>" alt="">
+    <h4>Description</h4>
+    <p><%= hotel.description %></p>
+    <h6 class="text-muted">Owned by <%= hotel.author.username %><% if(user && hotel.author.equals(user._id)){%>  (You)<% } %></h6>
+    <h5>Price: <%= hotel.price %></h5>
+    <% if(user && hotel.author.equals(user._id)){ %>
+    <p>
+        <a href="/hotels/<%= hotel._id %>/edit" class="button">Edit</a>
+    </p>
+    <form action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+        <button class="btn btn-sm btn-danger">Delete</button>
+    </form>
+    <%} %>
+    <div class="showReview">
+        <% if(hotel.reviews.length) { %>
+            <h4>Reviews (<%= hotel.reviews.length %> ratings)</h4>
+            <% 
+                let sum = 0;
+                let ratingCounts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+                hotel.reviews.sort((a, b) => b.rating - a.rating); // Sort reviews in descending order of rating
+                for(let review of hotel.reviews) {
+                    sum += review.rating;
+                    ratingCounts[review.rating]++;
+                }
+                let average = sum / hotel.reviews.length;
+            %>
+            <h5>Average rating = <%= average.toFixed(2) %> / 5</h5>
+            <div class="rating-container">
+                <div class="rating-card">
+                    <p>5 stars</p>
+                    <p class="rating-value1"><%= ratingCounts[5] %></p>
+                </div>
+                <div class="rating-card">
+                    <p>4 stars</p>
+                    <p class="rating-value1"><%= ratingCounts[4] %></p>
+                </div>
+                <div class="rating-card">
+                    <p>3 stars</p>
+                    <p class="rating-value1"><%= ratingCounts[3] %></p>
+                </div>
+                <div class="rating-card">
+                    <p>2 stars</p>
+                    <p class="rating-value1"><%= ratingCounts[2] %></p>
+                </div>
+                <div class="rating-card">
+                    <p>1 star</p>
+                    <p class="rating-value1"><%= ratingCounts[1] %></p>
+                </div>
+            </div>
+            <ul class="review-list">
+                <% hotel.reviews.forEach(review => { %>
+                    <li class="review-item">
+                        <span class="review-rating">Rating: <%= review.rating %>/5 <% for(let i=0;i<review.rating;i++){ %>&#9733;<% } %><% for(let i=review.rating;i<5;i++){ %>&#9734;<% } %></span>
+                        <h6 class="review-author">By <%= review.author.username %> <% if(user && review.author.equals(user._id)){%>  (You)<% } %></h6>
+                        <p class="review-body"><%= review.body %></p>
+                        <% if(user && review.author.equals(user._id)){ %>
+                        
+                        <form action="/hotels/<%= hotel._id %>/<%=review._id%>/reviews?_method=DELETE" method="POST" style="display:inline;">
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        <button class="btn btn-sm btn-primary" onclick="toggleEditForm('<%= review._id %>')">Edit</button>
+                        <form id="editForm-<%= review._id %>" action="/hotels/<%= hotel._id %>/<%=review._id%>/reviews?_method=PUT" method="POST" class="edit-review-form">
+                            <button class="btn btn-success edit-submit">Save</button>
+                            <div class="mb-3 slider-container">
+                                <label for="edit-rating-<%= review._id %>" class="form-label">Rating (out of 5)</label>
+                                <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="edit-rating-<%= review._id %>" value="<%= review.rating %>" oninput="updateEditRatingValue('<%= review._id %>')">
+                                <span id="editRatingValue-<%= review._id %>" class="rating-value"><%= review.rating %></span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="edit-body-<%= review._id %>">Review</label>
+                                <textarea class="form-control" name="review[body]" id="edit-body-<%= review._id %>" cols="30" rows="5" required><%= review.body %></textarea>
+                            </div>
+                        </form>
+                        <% } %>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <h4>Reviews</h4>
+            <p>No reviews yet. <% if(!(user && hotel.author.equals(user._id))){ %>Be the first one!!! <% } %></p>
+        <% } %>
+    </div>
+    <% if(!hasReviewed && !(user && hotel.author.equals(user._id))){ %>
+    <div class="addReview">
+        <h4>Add a review</h4>
+        <form action="/hotels/<%= hotel._id %>/reviews" method="POST" class="mb-3">
+            <div class="mb-3 slider-container">
+                <label for="rating" class="form-label">Rating (out of 5)</label>
+                <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="rating" oninput="updateRatingValue(this)">
+                <span id="ratingValue" class="rating-value">4</span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="body">Review</label>
+                <textarea class="form-control" name="review[body]" id="body" cols="30" rows="5" required></textarea>
+            </div>
+            <button class="btn btn-success">Submit</button>
+        </form>
+    </div>
+    <% }else if(hasReviewed){ %>
+        <p>You have already reviewed</p>
+    <% }else{ %>
+        <p>You cannot review your own hotel</p>
+    <% } %>
+    <script>
+        function updateRatingValue(slider) {
+            const ratingValue = document.getElementById('ratingValue');
+            ratingValue.innerText = slider.value;
+            const sliderWidth = slider.offsetWidth;
+            const value = (slider.value - slider.min) / (slider.max - slider.min);
+            const offset = value * sliderWidth + 150;
+            ratingValue.style.left = `calc(${offset}px - 50%)`;
+        }
+
+        // Set the initial value
+        const slider = document.getElementById('rating');
+        slider.value = 4;
+        updateRatingValue(slider);
+
+        function toggleEditForm(reviewId) {
+            const form = document.getElementById(`editForm-${reviewId}`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateEditRatingValue(reviewId) {
+            const slider = document.getElementById(`edit-rating-${reviewId}`);
+            const ratingValue = document.getElementById(`editRatingValue-${reviewId}`);
+            ratingValue.innerText = slider.value;
+            const sliderWidth = slider.offsetWidth;
+            const value = (slider.value - slider.min) / (slider.max - slider.min);
+            const offset = value * sliderWidth + 150;
+            ratingValue.style.left = `calc(${offset}px - 50%)`;
+        }
+    </script>
+</body>
+</html>

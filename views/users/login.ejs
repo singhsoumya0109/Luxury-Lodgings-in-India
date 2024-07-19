@@ -1,0 +1,46 @@
+<% layout('layouts/boilerplate') %>
+<div class="container">
+    <h1>Login</h1>
+    <form action="/login" method="POST" class="needs-validation" novalidate>
+        <div class="form-group">
+            <label for="username">User Name</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+            <div class="invalid-feedback">
+                Please provide a valid User Name.
+            </div>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+            <div class="invalid-feedback">
+                Please provide a valid password.
+            </div>
+            <div class="valid-feedback">
+                Looks good!
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Login</button>
+    </form>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                var isValid = form.checkValidity();
+                if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>

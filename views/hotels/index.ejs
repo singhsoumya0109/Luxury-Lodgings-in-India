@@ -1,0 +1,92 @@
+<% layout('/layouts/boilerplate') %>
+    
+<style>
+    .card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .card img {
+        width: 100%;
+        border-radius: 4px 4px 0 0;
+    }
+    .card h5 {
+        margin-top: 15px;
+        font-size: 1.25em;
+    }
+    .card h6 {
+        font-size: 1em;
+        color: #888;
+    }
+    .card p {
+        margin-top: 10px;
+        font-size: 0.95em;
+        color: #555;
+        flex-grow: 1;
+    }
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .col-md-4 {
+        flex: 1 1 calc(33.333% - 20px);
+        max-width: calc(33.333% - 20px);
+    }
+    .price {
+        font-size: 15px;
+    }
+</style>
+    
+<h1>All Hotels</h1>
+
+<!-- Sorting dropdown -->
+<div>
+    <label for="sort-by">Sort by: </label>
+    <select id="sort-by">
+        <option value="rating-desc" <%= query.sortBy === 'rating-desc' ? 'selected' : '' %>>Rating: High to Low</option>
+        <option value="rating-asc" <%= query.sortBy === 'rating-asc' ? 'selected' : '' %>>Rating: Low to High</option>
+        <option value="price-desc" <%= query.sortBy === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+        <option value="price-asc" <%= query.sortBy === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+        <option value="reviews-desc" <%= query.sortBy === 'reviews-desc' ? 'selected' : '' %>>Reviews: High to Low</option>
+        <option value="reviews-asc" <%= query.sortBy === 'reviews-asc' ? 'selected' : '' %>>Reviews: Low to High</option>
+    </select>
+</div>
+
+<div class="row">
+    <% for(let it of hotels) { %>
+        <div class="col-md-4">
+            <div class="card">
+                <a href="/hotels/<%= it._id %>">
+                    <img src="<%= it.image %>" alt="<%= it.title %>">
+                </a>
+                <h5><a href="/hotels/<%= it._id %>"><%= it.title %></a></h5>
+                <h6><%= it.location %></h6>
+                <h6 class="price">Price: <%= it.price %></h6>
+                <p><%= it.description %></p>
+                
+                <% if(it.reviews.length) { %>
+                    <a href="/hotels/<%= it._id %>">
+                        <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
+                    </a>
+                    <h6><%= it.averageRating.toFixed(2) %> / 5</h6> <!-- Display the average with 2 decimal places -->
+                <% } else { %>
+                    <h6>Average Rating</h6>
+                    <h6>No reviews yet</h6>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<script>
+    document.getElementById('sort-by').addEventListener('change', function() {
+        const selectedOption = this.value;
+        window.location.href = `?sortBy=${selectedOption}`;
+    });
+</script>
