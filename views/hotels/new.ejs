@@ -1,8 +1,13 @@
 <% layout('/layouts/boilerplate') %>
-
+<style>
+    .form-group1
+    {
+        margin-bottom: 10px;
+    }
+</style>
 <div class="container">
     <h1>Add New Hotel</h1>
-    <form action="/hotels" method="POST" class="needs-validation" novalidate>
+    <form action="/hotels" method="POST" class="needs-validation" novalidate enctype="multipart/form-data">
         <div class="form-group">
             <label for="title">Title/Name</label>
             <input type="text" class="form-control" id="title" name="hotel[title]" required>
@@ -33,7 +38,7 @@
                 Looks good!
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group form-group1">
             <label for="price">Price per Night</label>
             <input type="number" class="form-control" id="price" name="hotel[price]" required>
             <div class="invalid-feedback">
@@ -43,16 +48,11 @@
                 Looks good!
             </div>
         </div>
-        <div class="form-group">
-            <label for="image">Image URL</label>
-            <input type="url" class="form-control" id="image" name="hotel[image]" required>
-            <div class="invalid-feedback">
-                Please provide a valid URL.
-            </div>
-            <div class="valid-feedback">
-                Looks good!
-            </div>
+        <input type="file" name="image" id="" multiple>
+        
+       
+        <div>
+            <button type="submit" class="btn btn-primary mt-3">Add Hotel</button>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Add Hotel</button>
     </form>
 </div>

@@ -1,5 +1,5 @@
 <% layout('/layouts/boilerplate') %>
-    
+
 <style>
     .card {
         border: 1px solid #ddd;
@@ -32,61 +32,156 @@
     .row {
         display: flex;
         flex-wrap: wrap;
-        gap: 20px;
+        margin-left: -15px;
+        margin-right: -15px;
     }
     .col-md-4 {
-        flex: 1 1 calc(33.333% - 20px);
-        max-width: calc(33.333% - 20px);
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 30px;
     }
     .price {
         font-size: 15px;
     }
+    .drop-down, .search-bar {
+        margin: 0px;
+    }
+    .search-bar form {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .search-bar input[type="text"], .search-bar input[type="number"] {
+        margin-right: 10px;
+        padding: 5px;
+        flex-grow: 1;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+        margin-bottom: 0px;
+    }
+    .search-bar button {
+        padding: 5px 20px;
+        border: 1px solid #28a745;
+        border-radius: 4px;
+        background-color: #28a745;
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    .search-bar button:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+    .min-max {
+        margin: 5px;
+    }
+    .navbar h1 a {
+        color: black;
+    }
+    @media (max-width: 768px) {
+        .search-bar input[type="text"], .search-bar input[type="number"] {
+            flex: 1 1 100%;
+            margin-bottom: 10px;
+        }
+        .search-bar button {
+            flex: 1 1 100%;
+            margin-left: 0;
+        }
+    }
+
+    .carousel-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .image {
+        width: 100%;
+        height: auto;
+        min-height: 220px;
+        min-width: 315px;
+        max-height: 220px;
+        max-width: 315px;
+    }
 </style>
-    
-<h1>All Hotels</h1>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-<!-- Sorting dropdown -->
-<div>
-    <label for="sort-by">Sort by: </label>
-    <select id="sort-by">
-        <option value="rating-desc" <%= query.sortBy === 'rating-desc' ? 'selected' : '' %>>Rating: High to Low</option>
-        <option value="rating-asc" <%= query.sortBy === 'rating-asc' ? 'selected' : '' %>>Rating: Low to High</option>
-        <option value="price-desc" <%= query.sortBy === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
-        <option value="price-asc" <%= query.sortBy === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
-        <option value="reviews-desc" <%= query.sortBy === 'reviews-desc' ? 'selected' : '' %>>Reviews: High to Low</option>
-        <option value="reviews-asc" <%= query.sortBy === 'reviews-asc' ? 'selected' : '' %>>Reviews: Low to High</option>
-    </select>
-</div>
+<nav class="navbar navbar-light bg-light justify-content-between">
+    <h1><a href="/hotels">All Hotels</a></h1>
+    <div class="drop-down">
+        <label for="sort-by">Sort by: </label>
+        <select id="sort-by" class="form-control">
+            <option value="rating-desc" <%= query.sortBy === 'rating-desc' ? 'selected' : '' %>>Rating: High to Low</option>
+            <option value="rating-asc" <%= query.sortBy === 'rating-asc' ? 'selected' : '' %>>Rating: Low to High</option>
+            <option value="price-desc" <%= query.sortBy === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="price-asc" <%= query.sortBy === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="reviews-desc" <%= query.sortBy === 'reviews-desc' ? 'selected' : '' %>>Popularity: High to Low</option>
+            <option value="reviews-asc" <%= query.sortBy === 'reviews-asc' ? 'selected' : '' %>>Popularity: Low to High</option>
+        </select>
+    </div>
+    <div class="search-bar">
+        <form action="/hotels" method="GET" class="form-inline">
+            <input type="text" name="search" placeholder="Search by name" value="<%= query.search || '' %>" class="form-control">
+            <input type="text" name="location" placeholder="Location" value="<%= query.location || '' %>" class="form-control">
+            <input class="min-max form-control" type="number" name="minPrice" placeholder="Min Price" value="<%= query.minPrice || '' %>">
+            <input class="form-control" type="number" name="maxPrice" placeholder="Max Price" value="<%= query.maxPrice || '' %>">
+            <button type="submit" class="btn btn-success">Search</button>
+        </form>
+    </div>
+</nav>
 
-<div class="row">
-    <% for(let it of hotels) { %>
-        <div class="col-md-4">
-            <div class="card">
-                <a href="/hotels/<%= it._id %>">
-                    <img src="<%= it.image %>" alt="<%= it.title %>">
-                </a>
-                <h5><a href="/hotels/<%= it._id %>"><%= it.title %></a></h5>
-                <h6><%= it.location %></h6>
-                <h6 class="price">Price: <%= it.price %></h6>
-                <p><%= it.description %></p>
-                
-                <% if(it.reviews.length) { %>
-                    <a href="/hotels/<%= it._id %>">
-                        <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
-                    </a>
-                    <h6><%= it.averageRating.toFixed(2) %> / 5</h6> <!-- Display the average with 2 decimal places -->
-                <% } else { %>
-                    <h6>Average Rating</h6>
-                    <h6>No reviews yet</h6>
-                <% } %>
+<div class="container">
+    <div class="row">
+        <% for(let it of hotels) { %>
+            <div class="col-md-4">
+                <div class="card">
+                    <div id="carouselExample<%= it._id %>" class="carousel slide carousel-container">
+                        <div class="carousel-inner">
+                            <% it.images.forEach((img, index) => { %>
+                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                    <img src="<%= img.url %>" class="d-block w-100 image" alt="...">
+                                </div>
+                            <% }); %>
+                        </div>
+                        <% if(it.images.length>1){ %>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample<%= it._id %>" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample<%= it._id %>" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                        <% } %>
+                    </div>
+                    
+                    <h5><a href="/hotels/<%= it._id %>"><%= it.title %></a></h5>
+                    <h6><%= it.location %></h6>
+                    <h6 class="price">Price: <%= it.price %></h6>
+                    <p><%= it.description %></p>
+                    <% if(it.reviews.length) { %>
+                        <a href="/hotels/<%= it._id %>">
+                            <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
+                        </a>
+                        <h6><%= it.averageRating.toFixed(2) %> / 5</h6>
+                    <% } else { %>
+                        <h6>Average Rating</h6>
+                        <h6>No reviews yet</h6>
+                    <% } %>
+                </div>
             </div>
-        </div>
-    <% } %>
+        <% } %>
+    </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     document.getElementById('sort-by').addEventListener('change', function() {
         const selectedOption = this.value;
-        window.location.href = `?sortBy=${selectedOption}`;
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('sortBy', selectedOption);
+        window.location.search = searchParams.toString();
     });
 </script>

@@ -143,15 +143,7 @@ module.exports = [
         rank: "16",
         state: "Andhra Pradesh",
     },
-    {
-        city: "Pimpri-Chinchwad",
-        growth_from_2001_to_2011: "23.5%",
-        latitude: 18.6279,
-        longitude: 73.8001,
-        population: "1727692",
-        rank: "17",
-        state: "Maharashtra",
-    },
+    
     {
         city: "Patna",
         growth_from_2001_to_2011: "22.3%",
@@ -161,33 +153,7 @@ module.exports = [
         rank: "18",
         state: "Bihar",
     },
-    {
-        city: "Vadodara",
-        growth_from_2001_to_2011: "21.7%",
-        latitude: 22.3072,
-        longitude: 73.1812,
-        population: "1670806",
-        rank: "19",
-        state: "Gujarat",
-    },
-    {
-        city: "Ghaziabad",
-        growth_from_2001_to_2011: "48.2%",
-        latitude: 28.6692,
-        longitude: 77.4538,
-        population: "1648643",
-        rank: "20",
-        state: "Uttar Pradesh",
-    },
-    {
-        city: "Ludhiana",
-        growth_from_2001_to_2011: "16.2%",
-        latitude: 30.9010,
-        longitude: 75.8573,
-        population: "1618879",
-        rank: "21",
-        state: "Punjab",
-    },
+    
     {
         city: "Agra",
         growth_from_2001_to_2011: "21.7%",
@@ -215,15 +181,7 @@ module.exports = [
         rank: "24",
         state: "Jharkhand",
     },
-    {
-        city: "Faridabad",
-        growth_from_2001_to_2011: "34.4%",
-        latitude: 28.4089,
-        longitude: 77.3178,
-        population: "1394000",
-        rank: "25",
-        state: "Haryana",
-    },
+    
     {
         city: "Meerut",
         growth_from_2001_to_2011: "15.3%",
@@ -233,15 +191,7 @@ module.exports = [
         rank: "26",
         state: "Uttar Pradesh",
     },
-    {
-        city: "Kalyan-Dombivli",
-        growth_from_2001_to_2011: "48.2%",
-        latitude: 19.2350,
-        longitude: 73.1296,
-        population: "1243417",
-        rank: "27",
-        state: "Maharashtra",
-    },
+    
     {
         city: "Varanasi",
         growth_from_2001_to_2011: "24.0%",
@@ -287,15 +237,7 @@ module.exports = [
         rank: "32",
         state: "West Bengal",
     },
-    {
-        city: "Jabalpur",
-        growth_from_2001_to_2011: "17.0%",
-        latitude: 23.1815,
-        longitude: 79.9864,
-        population: "1054335",
-        rank: "33",
-        state: "Madhya Pradesh",
-    },
+    
     {
         city: "Gwalior",
         growth_from_2001_to_2011: "22.5%",
@@ -305,15 +247,7 @@ module.exports = [
         rank: "34",
         state: "Madhya Pradesh",
     },
-    {
-        city: "Vijayawada",
-        growth_from_2001_to_2011: "32.0%",
-        latitude: 16.5062,
-        longitude: 80.6480,
-        population: "1048240",
-        rank: "35",
-        state: "Andhra Pradesh",
-    },
+    
     {
         city: "Jodhpur",
         growth_from_2001_to_2011: "27.3%",
@@ -323,24 +257,7 @@ module.exports = [
         rank: "36",
         state: "Rajasthan",
     },
-    {
-        city: "Madurai",
-        growth_from_2001_to_2011: "20.6%",
-        latitude: 9.9252,
-        longitude: 78.1198,
-        population: "1016277",
-        rank: "37",
-        state: "Tamil Nadu",
-    },
-    {
-        city: "Raipur",
-        growth_from_2001_to_2011: "36.1%",
-        latitude: 21.2514,
-        longitude: 81.6296,
-        population: "1010087",
-        rank: "38",
-        state: "Chhattisgarh",
-    },
+    
     {
         city: "Kota",
         growth_from_2001_to_2011: "30.0%",
@@ -368,42 +285,7 @@ module.exports = [
         rank: "41",
         state: "Assam",
     },
-    {
-        city: "Solapur",
-        growth_from_2001_to_2011: "12.0%",
-        latitude: 17.6599,
-        longitude: 75.9064,
-        population: "951558",
-        rank: "42",
-        state: "Maharashtra",
-    },
-    {
-        city: "Hubballi-Dharwad",
-        growth_from_2001_to_2011: "22.0%",
-        latitude: 15.3647,
-        longitude: 75.1240,
-        population: "943857",
-        rank: "43",
-        state: "Karnataka",
-    },
-    {
-        city: "Bareilly",
-        growth_from_2001_to_2011: "26.5%",
-        latitude: 28.3670,
-        longitude: 79.4304,
-        population: "898167",
-        rank: "44",
-        state: "Uttar Pradesh",
-    },
-    {
-        city: "Moradabad",
-        growth_from_2001_to_2011: "25.3%",
-        latitude: 28.8389,
-        longitude: 78.7768,
-        population: "889810",
-        rank: "45",
-        state: "Uttar Pradesh",
-    },
+   
     {
         city: "Mysore",
         growth_from_2001_to_2011: "22.5%",
@@ -450,3 +332,5 @@ module.exports = [
         state: "Tamil Nadu",
     },
 ];
+
+

@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV!=="production"){
+    require('dotenv').config();
+}
+
+
 const express = require('express');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -10,7 +15,11 @@ const LocalStrategy = require('passport-local');
 const User = require('./models/user');
 const Review = require('./models/review');
 const Hotel = require('./models/hotel');
-
+const FuzzySearch=require('fuzzy-search');
+const multer  = require('multer')
+const {storage}=require('./cloudinary');
+const {cloudinary}=require('./cloudinary');
+const upload = multer({storage});
 const app = express();
 app.engine('ejs', ejsMate);
 
@@ -149,7 +158,7 @@ app.post('/register', catchAsync(async (req, res, next) => {
         req.login(registeredUser, err => {
             if (err) return next(err);
             req.flash('success', 'Welcome to Luxury Lodgings India!');
-            res.redirect('/hotels');
+            res.redirect('/');
         });
     } catch (e) {
         req.flash('error', e.message);
@@ -163,7 +172,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', storeReturnTo, passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), (req, res) => {
     req.flash('success', 'Welcome back to Luxury Lodgings India');
-    const returnTo = res.locals.returnTo || '/hotels';
+    const returnTo = res.locals.returnTo || '/';
     delete req.session.returnTo; // Remove the returnTo after using it
     res.redirect(returnTo);
 });
@@ -174,7 +183,7 @@ app.get('/logout', (req, res, next) => {
             return next(err);
         }
         req.flash('success', 'Goodbye! You have successfully logged out');
-        res.redirect('/hotels');
+        res.redirect('/');
     });
 });
 
@@ -239,10 +248,43 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/hotels', catchAsync(async (req, res) => {
-    const hotels = await Hotel.find({}).populate('reviews');
 
-    // Calculate the average rating for each hotel
+
+app.get('/hotels', catchAsync(async (req, res) => {
+    const { search, location, minPrice, maxPrice, sortBy = 'rating-desc' } = req.query;
+    let query = {};
+
+    
+    if (search) {
+        const hotels = await Hotel.find({});
+        const searcher = new FuzzySearch(hotels, ['title'], {
+            caseSensitive: false,
+            sort: true
+        });
+        query = { _id: { $in: searcher.search(search).map(hotel => hotel._id) } };
+    }
+
+    if (location) {
+        query.location = { $regex: location, $options: 'i' };
+    }
+
+    if (minPrice) {
+        query.price = { $gte: Number(minPrice) };
+    }
+
+    if (maxPrice) {
+        if (!query.price) {
+            query.price = {};
+        }
+        query.price.$lte = Number(maxPrice);
+    }
+
+    const hotels = await Hotel.find(query).populate('reviews');
+    if (hotels.length === 0) {
+        req.flash('error', 'No hotels found');
+        return res.redirect('/hotels');
+    }
+
     hotels.forEach(hotel => {
         let sum = 0;
         hotel.reviews.forEach(review => {
@@ -251,11 +293,7 @@ app.get('/hotels', catchAsync(async (req, res) => {
         hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
     });
 
-    // Get sorting criteria and order from query parameters
-    const sortBy = req.query.sortBy || 'rating-desc';
     const [criteria, order] = sortBy.split('-');
-
-    // Sort hotels based on the selected criteria and order
     hotels.sort((a, b) => {
         let comparison = 0;
         if (criteria === 'rating') {
@@ -272,13 +310,20 @@ app.get('/hotels', catchAsync(async (req, res) => {
     res.render('hotels/index', { hotels, query: req.query });
 }));
 
+
+
+
+
+
 app.get('/hotels/new', isLogin, (req, res) => {
     res.render('hotels/new');
 });
 
-app.post('/hotels', isLogin, catchAsync(async (req, res) => {
+app.post('/hotels', isLogin,upload.array('image'), catchAsync(async (req, res) => {
     const hotel = new Hotel(req.body.hotel);
+    hotel.images=req.files.map(f=>({url:f.path,filename:f.filename}));
     hotel.author = req.user._id;
+    //console.log(hotel);
     await hotel.save();
 
     // Find the user and update their hotels array
@@ -289,6 +334,11 @@ app.post('/hotels', isLogin, catchAsync(async (req, res) => {
     req.flash('success', 'Successfully added a new Hotel');
     res.redirect(`/hotels/${hotel._id}`);
 }));
+
+
+
+
+
 
 app.get('/hotels/:id', catchAsync(async (req, res, next) => {
     const hotel = await Hotel.findById(req.params.id).populate('author').populate({
@@ -317,16 +367,57 @@ app.get('/hotels/:id/edit', isLogin, isAuthor, catchAsync(async (req, res, next)
     res.render('hotels/edit', { hotel });
 }));
 
-app.put('/hotels/:id', isLogin, isAuthor, catchAsync(async (req, res, next) => {
+// app.put('/hotels/:id', isLogin, isAuthor,upload.array('image'), catchAsync(async (req, res, next) => {
+//     const { id } = req.params;
+//     console.log(req.body);
+//     const hotel = await Hotel.findByIdAndUpdate(id, { ...req.body.hotel }, { new: true, runValidators: true });
+//     if (!hotel) {
+//         req.flash('error', 'No hotels found');
+//         return res.redirect('/hotels');
+//     }
+//     const imgs=req.files.map(f=>({url:f.path,filename:f.filename}));
+//     hotel.images.push(...imgs);
+//     await hotel.save();
+//     if(req.body.deleteImages)
+//     {
+//         await hotel.updateOne({$pull: {images: {filename: { $in:req.body.deleteImages}}}});
+//     }
+//     req.flash('success', 'Successfully updated the Hotel');
+//     res.redirect(`/hotels/${hotel._id}`);
+// }));
+
+
+
+app.put('/hotels/:id', isLogin, isAuthor, upload.array('image'), catchAsync(async (req, res, next) => {
     const { id } = req.params;
+    // console.log('Request body:', req.body);
+    // console.log('Files:', req.files);
+
     const hotel = await Hotel.findByIdAndUpdate(id, { ...req.body.hotel }, { new: true, runValidators: true });
     if (!hotel) {
         req.flash('error', 'No hotels found');
         return res.redirect('/hotels');
     }
+
+    const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));
+    hotel.images.push(...imgs);
+    await hotel.save();
+
+    if (req.body.deleteImages) {
+        //console.log('Images to delete:', req.body.deleteImages);
+        // Ensure deleteImages is an array of strings
+        const deleteImages = req.body.deleteImages.map(filename => filename.trim());
+        for(let filename of deleteImages)
+        {
+            await cloudinary.uploader.destroy(filename);
+        }
+        await hotel.updateOne({ $pull: { images: { filename: { $in: deleteImages } } } });
+    }
+
     req.flash('success', 'Successfully updated the Hotel');
     res.redirect(`/hotels/${hotel._id}`);
 }));
+
 
 app.delete('/hotels/:id', isLogin, isAuthor, async (req, res) => {
     const { id } = req.params;

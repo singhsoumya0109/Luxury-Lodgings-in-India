@@ -12,10 +12,18 @@ const HotelSchema = new Schema(
             required: true,
             min: [0, 'Price must be a non-negative number.']
         },
-        image: {
-            type: String,
-            required: true
-        },
+        images:[
+            {
+                url: {
+                    type: String,
+                    required: true
+                },
+                filename: {
+                    type: String,
+                    required: true
+                }
+            }
+        ],
         description: {
             type: String,
             required: true

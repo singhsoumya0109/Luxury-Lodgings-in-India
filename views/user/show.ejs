@@ -5,48 +5,57 @@
         border-radius: 4px;
         margin-bottom: 20px;
         padding: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
         height: 100%; /* Make all cards the same height */
     }
+
     .card img {
         width: 100%;
         border-radius: 4px 4px 0 0;
     }
+
     .card h5 {
         margin-top: 15px;
         font-size: 1.25em;
     }
+
     .card h6 {
         font-size: 1em;
         color: #888;
     }
+
     .card p {
         margin-top: 10px;
         font-size: 0.95em;
         color: #555;
         flex-grow: 1; /* Ensure the description takes up available space */
     }
+
     .row {
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
         margin-bottom: 20px;
     }
+
     .col-md-4 {
         flex: 1 1 calc(33.333% - 20px);
         max-width: calc(33.333% - 20px);
     }
+
     .slider-container {
         position: relative;
         width: 100%;
         max-width: 300px; /* Adjust the width as needed */
         margin-bottom: 20px;
     }
+
     .form-range {
         width: 100%;
     }
+
     .rating-value {
         position: absolute;
         top: -1px; /* Adjust the top value as needed */
@@ -58,6 +67,7 @@
         border-radius: 4px;
         font-size: 14px;
     }
+
     .showReview {
         border: 2px solid black; /* Add black border */
         padding: 10px; /* Optional: Add some padding */
@@ -65,10 +75,12 @@
         max-height: 500px; /* Set the max height for the scrollable area */
         overflow-y: auto; /* Enable vertical scroll */
     }
+
     .review-list {
         list-style-type: none; /* Remove bullet points */
         padding: 0; /* Remove default padding */
     }
+
     .review-item {
         background-color: #f9f9f9; /* Light grey background */
         margin-bottom: 10px; /* Space between reviews */
@@ -76,40 +88,76 @@
         border-radius: 4px; /* Rounded corners */
         border: 1px solid #ddd; /* Light border */
     }
+
     .review-rating {
         font-weight: bold;
         color: #333;
     }
+
     .review-body {
         margin-top: 2px;
         font-size: 20px;
         color: #0c0c0cf7;
     }
+
     .review-buttons {
         display: flex;
         gap: 10px;
         margin-top: 10px;
     }
+
     .edit-review-form {
         display: none;
     }
+
     .edit-submit {
         margin-top: 10px;
     }
-    .delete-user{
+
+    .delete-user {
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
     }
-    .delete-btn
-    {
+
+    .delete-btn {
         font-size: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-4 {
+            flex: 1 1 100%;
+            max-width: 100%;
+        }
+
+        .delete-user {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .delete-btn {
+            margin-top: 10px;
+        }
+    }
+    .carousel-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .image {
+        width: 100%;
+        height: auto;
+        min-height: 210px;
+        min-width: 310px;
+        max-height: 200px;
+        max-width: 300px;
     }
 </style>
 <div class="delete-user">
     <h1>Hello <%= user.username %></h1>
-    <form action="/users/<%= user._id %>?_method=DELETE" method="POST" >
-    <button class="btn btn-sm btn-danger delete-btn">Delete account</button>
-</form>
+    <form action="/users/<%= user._id %>?_method=DELETE" method="POST">
+        <button class="btn btn-sm btn-danger delete-btn">Delete account</button>
+    </form>
 </div>
 <h3>Number of hotels you own: <%= user.hotels.length %></h3>
 
@@ -126,22 +174,36 @@
 
         // Sort hotels by average rating in descending order and then by number of reviews in descending order
         user.hotels.sort((a, b) => {
-           if (b.averageRating === a.averageRating) {
+            if (b.averageRating === a.averageRating) {
                 return b.reviews.length - a.reviews.length;
             }
             return b.averageRating - a.averageRating;
-        }); 
+        });
     %>
     <% for(let it of user.hotels) { %>
         <div class="col-md-4">
             <div class="card">
-                <a href="/hotels/<%= it._id %>">
-                    <img src="<%= it.image %>" alt="<%= it.title %>">
-                </a>
+                <div id="carouselExample<%= it._id %>" class="carousel slide carousel-container">
+                    <div class="carousel-inner">
+                        <% it.images.forEach((img, index) => { %>
+                            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                <img src="<%= img.url %>" class="d-block w-100 image" alt="...">
+                            </div>
+                        <% }); %>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample<%= it._id %>" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample<%= it._id %>" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
                 <h5><a href="/hotels/<%= it._id %>"><%= it.title %></a></h5>
                 <h6><%= it.location %></h6>
                 <p><%= it.description %></p>
-                
+
                 <% if(it.reviews.length) { %>
                     <a href="/hotels/<%= it._id %>">
                         <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
@@ -158,38 +220,38 @@
 
 <h3>Number of reviews done: <%= user.reviews.length %></h3>
 
-<% user.reviews = user.reviews.reverse(); %> 
+<% user.reviews = user.reviews.reverse(); %>
 <% if(user.reviews.length) { %>
-<div class="showReview">
-    <ul class="review-list">
-        <% user.reviews.forEach(review => { %>
-            <li class="review-item">
-                <h5><a href="/hotels/<%= review.hotel._id %>"><%= review.hotel.title %></a></h5>
-                <h6><%= review.hotel.location %></a></h6>
-                <span class="review-rating">Rating: <%= review.rating %>/5</span>
-                <p class="review-body"><%= review.body %></p>
-                <div class="review-buttons">
-                    <form action="/hotels/<%= review.hotel._id %>/<%=review._id %>/reviews?_method=DELETE" method="POST">
-                        <button class="btn btn-sm btn-danger">Delete</button>
+    <div class="showReview">
+        <ul class="review-list">
+            <% user.reviews.forEach(review => { %>
+                <li class="review-item">
+                    <h5><a href="/hotels/<%= review.hotel._id %>"><%= review.hotel.title %></a></h5>
+                    <h6><%= review.hotel.location %></a></h6>
+                    <span class="review-rating">Rating: <%= review.rating %>/5</span>
+                    <p class="review-body"><%= review.body %></p>
+                    <div class="review-buttons">
+                        <form action="/hotels/<%= review.hotel._id %>/<%=review._id %>/reviews?_method=DELETE" method="POST">
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        <button class="btn btn-sm btn-primary" onclick="toggleEditForm('<%= review._id %>')">Edit</button>
+                    </div>
+                    <form id="editForm-<%= review._id %>" action="/hotels/<%= review.hotel._id %>/<%=review._id%>/reviews?_method=PUT" method="POST" class="edit-review-form">
+                        <button class="btn btn-success edit-submit">Save</button>
+                        <div class="mb-3 slider-container">
+                            <label for="edit-rating-<%= review._id %>" class="form-label">Rating (out of 5)</label>
+                            <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="edit-rating-<%= review._id %>" value="<%= review.rating %>" oninput="updateEditRatingValue('<%= review._id %>')">
+                            <span id="editRatingValue-<%= review._id %>" class="rating-value"><%= review.rating %></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="edit-body-<%= review._id %>">Review</label>
+                            <textarea class="form-control" name="review[body]" id="edit-body-<%= review._id %>" cols="30" rows="5" required><%= review.body %></textarea>
+                        </div>
                     </form>
-                    <button class="btn btn-sm btn-primary" onclick="toggleEditForm('<%= review._id %>')">Edit</button>
-                </div>
-                <form id="editForm-<%= review._id %>" action="/hotels/<%= review.hotel._id %>/<%=review._id%>/reviews?_method=PUT" method="POST" class="edit-review-form">
-                    <button class="btn btn-success edit-submit">Save</button>
-                    <div class="mb-3 slider-container">
-                        <label for="edit-rating-<%= review._id %>" class="form-label">Rating (out of 5)</label>
-                        <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="edit-rating-<%= review._id %>" value="<%= review.rating %>" oninput="updateEditRatingValue('<%= review._id %>')">
-                        <span id="editRatingValue-<%= review._id %>" class="rating-value"><%= review.rating %></span>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="edit-body-<%= review._id %>">Review</label>
-                        <textarea class="form-control" name="review[body]" id="edit-body-<%= review._id %>" cols="30" rows="5" required><%= review.body %></textarea>
-                    </div>
-                </form>
-            </li>
-        <% }); %>
-    </ul>
-</div>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
 <% } %>
 
 <script>
