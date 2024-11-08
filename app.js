@@ -2,7 +2,7 @@ if(process.env.NODE_ENV!=="production"){
     require('dotenv').config();
 }
 
-
+const mongoSanitize = require('express-mongo-sanitize');
 const express = require('express');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -19,11 +19,15 @@ const FuzzySearch=require('fuzzy-search');
 const multer  = require('multer')
 const {storage}=require('./cloudinary');
 const {cloudinary}=require('./cloudinary');
+const ExpressMongoSanitize = require('express-mongo-sanitize');
 const upload = multer({storage});
 const app = express();
 app.engine('ejs', ejsMate);
 
-mongoose.connect('mongodb://127.0.0.1:27017/Hotels', {})
+
+const url=process.env.db_url;
+
+mongoose.connect(url, {})
     .then(() => {
         console.log("MongoDB connection established successfully.");
     })
@@ -50,8 +54,10 @@ app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+app.use(mongoSanitize());
 
 app.use((req, res, next) => {
+    //console.log(req.query);
     res.locals.user = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
