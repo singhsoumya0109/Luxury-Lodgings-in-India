@@ -11,18 +11,60 @@
     }
 
     .footer {
-        background-color: #090909; /* equivalent to bg-dark */
-        color: #ffffff; /* equivalent to text-light */
-        padding: 1rem 0;
-        margin-top: auto; /* This pushes the footer to the bottom */
+        background-color: #090909; /* Dark background */
+        color: #ffffff; /* Light text color */
+        padding: 0.7rem 0;
+        margin-top: auto;
+        z-index: 2;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .footer .social-icons a {
+        color: #ffffff; /* White color for icons */
+        margin: 0 10px;
+        font-size: 1.2rem;
+        text-decoration: none;
+    }
+
+    .footer .social-icons a:hover {
+        color: #0073b1; /* LinkedIn color on hover */
+    }
+
+    .footer .social-icons a.github-icon:hover {
+        color: #333333; /* GitHub icon color on hover */
+    }
+
+    .footer .social-icons a.portfolio-icon:hover {
+        color: #3498db; /* Blue for portfolio link on hover */
     }
 </style>
+
 <div class="content">
     <!-- Your page content here -->
 </div>
 
 <footer class="footer">
-    <div class="container">
-        <span>&copy; Soumyadeep Singh JU BCSE26</span>
+    <div class="container d-flex justify-content-between align-items-center">
+        <span>&copy; Soumyadeep Singh JU CSE26</span>
+        <div class="social-icons">
+            <a href="https://www.linkedin.com/in/soumyadeep-singh-347044258/" target="_blank">
+                <i class="bi bi-linkedin"></i> <!-- LinkedIn Icon -->
+            </a>
+            <a href="https://github.com/singhsoumya0109" target="_blank" class="github-icon">
+                <i class="bi bi-github"></i> <!-- GitHub Icon -->
+            </a>
+            <a href="https://singhsoumya0109.github.io/Portfolio-website/" target="_blank" class="portfolio-icon">
+                <i class="bi bi-briefcase"></i> <!-- Portfolio Icon -->
+            </a>
+        </div>
     </div>
 </footer>
+
+<!-- Add Bootstrap Icons for social icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+
+
