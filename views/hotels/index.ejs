@@ -164,7 +164,7 @@
                         <a href="/hotels/<%= it._id %>">
                             <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
                         </a>
-                        <h6><%= it.averageRating.toFixed(2) %> / 5</h6>
+                        <h6><%= (it.ratingSum / it.reviews.length).toFixed(2) %> / 5</h6>
                     <% } else { %>
                         <h6>Average Rating</h6>
                         <h6>No reviews yet</h6>
@@ -174,6 +174,9 @@
         <% } %>
     </div>
 </div>
+
+
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

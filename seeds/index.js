@@ -4,9 +4,10 @@ const { places, descriptors } = require('./seedHelpers');
 const Hotel = require('../models/hotel');
 const Review = require('../models/review');
 const User = require('../models/user');
+const Booking=require('../models/bookings');
 
 // Use db_url from .env
-mongoose.connect("",{})
+mongoose.connect("/hehe",{})
     .then(() => {
         console.log("CONNECTION RUNNING");
     })
@@ -91,8 +92,11 @@ const seedDB = async () => {
     // Clear existing reviews and hotels for admin and review authors
     admin.reviews = [];
     admin.hotels = [];
+    admin.bookings=[];
     for (const user of reviewAuthors) {
         user.reviews = [];
+        user.hotels=[];
+        user.bookings=[];
     }
     await admin.save();
     for (const user of reviewAuthors) {
@@ -101,12 +105,12 @@ const seedDB = async () => {
 
     await Hotel.deleteMany({});
     await Review.deleteMany({});
-
+    await Booking.deleteMany({});
     const ratedReviews = Math.floor(Math.random() * 11) + 40;
 
     for (let i = 0; i < ratedReviews; i++) {
         const random36 = Math.floor(Math.random() * 36);
-        const price1 = Math.floor(Math.random() * 5001) + 1000; // Adjusting price range to reflect hotel prices
+        const price1 = Math.floor(Math.random() * 5001) + 2000; // Adjusting price range to reflect hotel prices
 
         const hotel = new Hotel({
             location: `${cities[random36].city}, ${cities[random36].state}`,
@@ -127,23 +131,53 @@ const seedDB = async () => {
             ],
             description: sample(descriptions), // Use a random description
             price: price1,
-            author: '672d16061151a2f1996fa392'
+            author: '672d16061151a2f1996fa392',
+            totalRooms:5,
+
         });
 
         await hotel.save();
 
-        for (let j = 0; j < 5; j++) {
+        // for (let j = 0; j < 5; j++) {
+        //     const rating1 = getWeightedRandom();
+        //     const review = new Review({
+        //         body: reviewBody[rating1],
+        //         rating: rating1,
+        //         author: reviewAuthors[j]._id, // Use the specific author ID
+        //         hotel: hotel._id
+        //     });
+        //     reviewAuthors[j].reviews.push(review); // Add the review to the user's reviews array
+        //     await review.save();
+        //     hotel.ratingSum+=rating1;
+        //     hotel.ratingCount.set(rating1.toString(), hotel.ratingCount.get(rating1.toString()) + 1);
+        //     hotel.reviews.push(review); // Add the review to the hotel's reviews array
+        // }
+
+
+        // Generate a random number between 1 and 5 for the number of reviews
+        const numReviews = Math.floor(Math.random() * 5) + 1;
+
+        // Shuffle the authors array and pick a unique subset
+        const shuffledAuthors = reviewAuthors.sort(() => 0.5 - Math.random());
+        const selectedAuthors = shuffledAuthors.slice(0, numReviews);
+
+        for (let j = 0; j < numReviews; j++) {
             const rating1 = getWeightedRandom();
             const review = new Review({
                 body: reviewBody[rating1],
                 rating: rating1,
-                author: reviewAuthors[j]._id, // Use the specific author ID
+                author: selectedAuthors[j]._id, // Use the specific author ID
                 hotel: hotel._id
             });
-            reviewAuthors[j].reviews.push(review); // Add the review to the user's reviews array
+            selectedAuthors[j].reviews.push(review); // Add the review to the user's reviews array
             await review.save();
+            
+            // Update hotel ratingSum and ratingCount
+            hotel.ratingSum += rating1;
+            hotel.ratingCount.set(rating1.toString(), hotel.ratingCount.get(rating1.toString()) + 1);
             hotel.reviews.push(review); // Add the review to the hotel's reviews array
         }
+
         admin.hotels.push(hotel);
         await hotel.save(); // Save hotel again with the reviews
     }
@@ -152,7 +186,7 @@ const seedDB = async () => {
     // Create hotels with no reviews
     for (let i = 0; i < noReview; i++) {
         const random36 = Math.floor(Math.random() * 36);
-        const price1 = Math.floor(Math.random() * 5001) + 1000; // Adjusting price range to reflect hotel prices
+        const price1 = Math.floor(Math.random() * 5001) + 2000; // Adjusting price range to reflect hotel prices
 
         const hotel = new Hotel({
             location: `${cities[random36].city}, ${cities[random36].state}`,
@@ -160,12 +194,21 @@ const seedDB = async () => {
             images: [
                 {
                     url: sample(imageUrls),
-                    filename: 'Hotel.png'
+                    filename: 'Hotel1.png'
+                },
+                {
+                    url: sample(imageUrls),
+                    filename: 'Hotel2.png'
+                },
+                {
+                    url: sample(imageUrls),
+                    filename: 'Hotel3.png'
                 }
             ],
             description: sample(descriptions), // Use a random description
             price: price1,
-            author: '672d16061151a2f1996fa392'
+            author: '672d16061151a2f1996fa392',
+            totalRooms:5
         });
         admin.hotels.push(hotel);
         await hotel.save(); // Save hotel without reviews

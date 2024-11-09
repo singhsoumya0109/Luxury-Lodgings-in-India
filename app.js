@@ -13,6 +13,7 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
+const Booking = require('./models/bookings');
 const Review = require('./models/review');
 const Hotel = require('./models/hotel');
 const FuzzySearch=require('fuzzy-search');
@@ -193,62 +194,62 @@ app.get('/logout', (req, res, next) => {
     });
 });
 
-app.delete('/users/:id', async (req, res) => {
-    const { id } = req.params; // Use id from req.params
-    const user = await User.findById(id).populate({
-        path: 'reviews',
-        populate: {
-            path: 'hotel'
-        }
-    }).populate('hotels');
+// app.delete('/users/:id', async (req, res) => {
+//     const { id } = req.params; // Use id from req.params
+//     const user = await User.findById(id).populate({
+//         path: 'reviews',
+//         populate: {
+//             path: 'hotel'
+//         }
+//     }).populate('hotels');
 
-    if (!user) {
-        req.flash('error', 'User not found');
-        return res.redirect('/somewhere'); // Redirect to a relevant page
-    }
+//     if (!user) {
+//         req.flash('error', 'User not found');
+//         return res.redirect('/somewhere'); // Redirect to a relevant page
+//     }
 
-    // Delete all reviews written by the user
-    const reviews = user.reviews;
-    for (let review of reviews) {
-        const hotelId = review.hotel._id;
-        const hotel = await Hotel.findById(hotelId);
+//     // Delete all reviews written by the user
+//     const reviews = user.reviews;
+//     for (let review of reviews) {
+//         const hotelId = review.hotel._id;
+//         const hotel = await Hotel.findById(hotelId);
 
-        if (hotel) {
-            hotel.reviews = hotel.reviews.filter(hotelReview => String(hotelReview) !== String(review._id));
-            await hotel.save();
-        }
+//         if (hotel) {
+//             hotel.reviews = hotel.reviews.filter(hotelReview => String(hotelReview) !== String(review._id));
+//             await hotel.save();
+//         }
 
-        await Review.findByIdAndDelete(review._id);
-    }
+//         await Review.findByIdAndDelete(review._id);
+//     }
 
-    // Delete all hotels created by the user
-    const hotels = user.hotels;
-    for (let hotel of hotels) {
-        // Get the list of review IDs
-        const reviewIds = hotel.reviews;
+//     // Delete all hotels created by the user
+//     const hotels = user.hotels;
+//     for (let hotel of hotels) {
+//         // Get the list of review IDs
+//         const reviewIds = hotel.reviews;
 
-        // Remove each review ID from the corresponding author's reviews array and delete the review
-        for (let reviewId of reviewIds) {
-            const review = await Review.findById(reviewId);
+//         // Remove each review ID from the corresponding author's reviews array and delete the review
+//         for (let reviewId of reviewIds) {
+//             const review = await Review.findById(reviewId);
 
-            if (review) {
-                const reviewAuthor = await User.findById(review.author);
-                if (reviewAuthor) {
-                    reviewAuthor.reviews = reviewAuthor.reviews.filter(userReview => String(userReview) !== String(reviewId));
-                    await reviewAuthor.save();
-                }
-                await Review.findByIdAndDelete(reviewId);
-            }
-        }
+//             if (review) {
+//                 const reviewAuthor = await User.findById(review.author);
+//                 if (reviewAuthor) {
+//                     reviewAuthor.reviews = reviewAuthor.reviews.filter(userReview => String(userReview) !== String(reviewId));
+//                     await reviewAuthor.save();
+//                 }
+//                 await Review.findByIdAndDelete(reviewId);
+//             }
+//         }
 
-        await Hotel.findByIdAndDelete(hotel._id);
-    }
+//         await Hotel.findByIdAndDelete(hotel._id);
+//     }
 
-    await User.findByIdAndDelete(id);
+//     await User.findByIdAndDelete(id);
 
-    req.flash('success', 'Successfully deleted user, associated reviews, and hotels');
-    res.redirect(`/hotels`); // Redirect to a relevant page
-});
+//     req.flash('success', 'Successfully deleted user, associated reviews, and hotels');
+//     res.redirect(`/hotels`); // Redirect to a relevant page
+// });
 
 app.get('/', (req, res) => {
     res.render('home');
@@ -286,24 +287,43 @@ app.get('/hotels', catchAsync(async (req, res) => {
     }
 
     const hotels = await Hotel.find(query).populate('reviews');
+
+
     if (hotels.length === 0) {
         req.flash('error', 'No hotels found');
         return res.redirect('/hotels');
     }
 
-    hotels.forEach(hotel => {
-        let sum = 0;
-        hotel.reviews.forEach(review => {
-            sum += review.rating;
-        });
-        hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
-    });
+    // hotels.forEach(hotel => {
+    //     let sum = 0;
+    //     hotel.reviews.forEach(review => {
+    //         sum += review.rating;
+    //     });
+    //     hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
+    // });
+
+    // const [criteria, order] = sortBy.split('-');
+    // hotels.sort((a, b) => {
+    //     let comparison = 0;
+    //     if (criteria === 'rating') {
+    //         comparison = b.averageRating - a.averageRating;
+    //     } else if (criteria === 'price') {
+    //         comparison = b.price - a.price;
+    //     } else if (criteria === 'reviews') {
+    //         comparison = b.reviews.length - a.reviews.length;
+    //     }
+
+    //     return order === 'asc' ? comparison * -1 : comparison;
+    // });
+
 
     const [criteria, order] = sortBy.split('-');
     hotels.sort((a, b) => {
         let comparison = 0;
         if (criteria === 'rating') {
-            comparison = b.averageRating - a.averageRating;
+            const avgRatingA = a.reviews.length ? a.ratingSum / a.reviews.length : 0;
+            const avgRatingB = b.reviews.length ? b.ratingSum / b.reviews.length : 0;
+            comparison = avgRatingB - avgRatingA;
         } else if (criteria === 'price') {
             comparison = b.price - a.price;
         } else if (criteria === 'reviews') {
@@ -312,6 +332,7 @@ app.get('/hotels', catchAsync(async (req, res) => {
 
         return order === 'asc' ? comparison * -1 : comparison;
     });
+
 
     res.render('hotels/index', { hotels, query: req.query });
 }));
@@ -324,6 +345,8 @@ app.get('/hotels', catchAsync(async (req, res) => {
 app.get('/hotels/new', isLogin, (req, res) => {
     res.render('hotels/new');
 });
+
+
 
 app.post('/hotels', isLogin,upload.array('image'), catchAsync(async (req, res) => {
     const hotel = new Hotel(req.body.hotel);
@@ -343,6 +366,81 @@ app.post('/hotels', isLogin,upload.array('image'), catchAsync(async (req, res) =
 
 
 
+app.get('/hotels/:id/bookings',(req,res)=>{
+    res.redirect(`/hotels/${req.params.id}`);
+})
+
+app.post('/hotels/:id/bookings', isLogin, async (req, res) => {
+    const { checkin, checkout } = req.body;
+    const rooms = parseInt(req.body.rooms, 10);
+    const adults = parseInt(req.body.adults, 10);
+    const children = parseInt(req.body.children, 10);
+
+    const checkinDate = new Date(checkin);
+    const checkoutDate = new Date(checkout);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    // Validate dates
+    if (checkinDate < currentDate) {
+        req.flash('error', 'Check-in date must be greater than or equal to today\'s date');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+    if (checkoutDate < checkinDate) {
+        req.flash('error', 'Check-out date must be greater than or equal to the check-in date');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+
+    // Validate room, adult, and children counts
+    if (rooms <= 0) {
+        req.flash('error', 'Rooms must be positive');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+    if (adults <= 0) {
+        req.flash('error', 'Adults must be greater than zero');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+    if (children < 0) {
+        req.flash('error', 'Children must be non-negative');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+
+    const hotel = await Hotel.findById(req.params.id);
+
+    // Check room availability
+    if (hotel.currentlyOccupied + rooms > hotel.totalRooms) {
+        req.flash('error', 'The hotel is fully occupied or has limited availability. Choose another hotel or adjust the room count.');
+        return res.redirect(`/hotels/${req.params.id}`);
+    }
+
+    // Update currentlyOccupied count
+    hotel.currentlyOccupied += rooms;
+
+    const booking = new Booking({
+        checkin: checkinDate,
+        checkout: checkoutDate,
+        hotel: req.params.id,
+        price: hotel.price,
+        rooms,
+        adults,
+        children,
+        author: req.user._id
+    });
+
+    await booking.save();
+
+    hotel.bookings.push(booking);
+
+    const user = await User.findById(req.user._id);
+    user.bookings.push(booking);
+
+    await user.save();
+    await hotel.save();
+
+    req.flash('success', 'Successfully booked the hotel');
+    res.redirect(`/hotels/${req.params.id}`);
+});
+
 
 
 
@@ -352,6 +450,10 @@ app.get('/hotels/:id', catchAsync(async (req, res, next) => {
         populate: {
             path: 'author'
         }
+    })
+    .populate({
+        path: 'bookings',
+        populate: { path: 'author', select: 'username' }
     });
     if (!hotel) {
         req.flash('error', 'No hotels found');
@@ -425,50 +527,50 @@ app.put('/hotels/:id', isLogin, isAuthor, upload.array('image'), catchAsync(asyn
 }));
 
 
-app.delete('/hotels/:id', isLogin, isAuthor, async (req, res) => {
-    const { id } = req.params;
+// app.delete('/hotels/:id', isLogin, isAuthor, async (req, res) => {
+//     const { id } = req.params;
 
-    try {
-        // Find the hotel to delete
-        const hotel = await Hotel.findByIdAndDelete(id);
+//     try {
+//         // Find the hotel to delete
+//         const hotel = await Hotel.findByIdAndDelete(id);
 
-        if (!hotel) {
-            req.flash('error', 'Hotel not found');
-            return res.redirect('/hotels');
-        }
+//         if (!hotel) {
+//             req.flash('error', 'Hotel not found');
+//             return res.redirect('/hotels');
+//         }
 
-        // Remove hotel ID from user's hotels array
-        const user = await User.findById(req.user._id);
-        user.hotels.pull(id);
-        await user.save();
+//         // Remove hotel ID from user's hotels array
+//         const user = await User.findById(req.user._id);
+//         user.hotels.pull(id);
+//         await user.save();
 
-        // Get the list of review IDs
-        const reviewIds = hotel.reviews;
+//         // Get the list of review IDs
+//         const reviewIds = hotel.reviews;
 
-        // Remove each review ID from the corresponding author's reviews array
-        for (let reviewId of reviewIds) {
-            const review = await Review.findById(reviewId);
+//         // Remove each review ID from the corresponding author's reviews array
+//         for (let reviewId of reviewIds) {
+//             const review = await Review.findById(reviewId);
 
-            if (review) {
-                const reviewAuthor = await User.findById(review.author);
-                if (reviewAuthor) {
-                    reviewAuthor.reviews.pull(reviewId);
-                    await reviewAuthor.save();
-                }
-            }
-        }
+//             if (review) {
+//                 const reviewAuthor = await User.findById(review.author);
+//                 if (reviewAuthor) {
+//                     reviewAuthor.reviews.pull(reviewId);
+//                     await reviewAuthor.save();
+//                 }
+//             }
+//         }
 
-        // Delete associated reviews
-        await Review.deleteMany({ _id: { $in: reviewIds } });
+//         // Delete associated reviews
+//         await Review.deleteMany({ _id: { $in: reviewIds } });
 
-        req.flash('success', 'Successfully deleted hotel');
-        res.redirect('/hotels');
-    } catch (err) {
-        console.error('Error deleting hotel:', err);
-        req.flash('error', 'Failed to delete hotel');
-        res.redirect('/hotels');
-    }
-});
+//         req.flash('success', 'Successfully deleted hotel');
+//         res.redirect('/hotels');
+//     } catch (err) {
+//         console.error('Error deleting hotel:', err);
+//         req.flash('error', 'Failed to delete hotel');
+//         res.redirect('/hotels');
+//     }
+// });
 
 app.post('/hotels/:id/reviews', isLogin, isNotAuthor, checkAlreadyReviewed, catchAsync(async (req, res) => {
     // Find the hotel by ID
@@ -476,11 +578,13 @@ app.post('/hotels/:id/reviews', isLogin, isNotAuthor, checkAlreadyReviewed, catc
 
     // Create a new review
     const review = new Review(req.body.review);
-
+    hotel.ratingSum+=review.rating;
     // Assign the current user as the author of the review
     review.author = req.user._id;
     review.hotel = req.params.id;
     // Push the new review into the hotel's reviews array
+    //hotel.reviewCount[review.rating]++;
+    hotel.ratingCount.set(review.rating.toString(), hotel.ratingCount.get(review.rating.toString()) + 1);
     hotel.reviews.push(review);
 
     // Save the review and the hotel
@@ -499,33 +603,56 @@ app.post('/hotels/:id/reviews', isLogin, isNotAuthor, checkAlreadyReviewed, catc
     res.redirect(`/hotels/${hotel._id}`);
 }));
 
+
+
 app.put('/hotels/:hotelId/:reviewId/reviews', isLogin, isAuthorReview, catchAsync(async (req, res) => {
     const { hotelId, reviewId } = req.params;
     const { rating, body } = req.body.review;
-
-    // Find the review and update it
+    const hotel = await Hotel.findById(hotelId);
     const review = await Review.findById(reviewId);
+
     if (!review) {
         req.flash('error', 'No such review found');
         return res.redirect(`/hotels/${hotelId}`);
     }
 
+    // Adjust ratingSum for the hotel
+    hotel.ratingSum -= review.rating;
+    hotel.ratingSum += parseInt(rating);
+
+    // Update rating counts
+    if (hotel.ratingCount.has(review.rating.toString())) {
+        hotel.ratingCount.set(review.rating.toString(), hotel.ratingCount.get(review.rating.toString()) - 1);
+    }
+
+    if (hotel.ratingCount.has(rating.toString())) {
+        hotel.ratingCount.set(rating.toString(), hotel.ratingCount.get(rating.toString()) + 1);
+    }
+
+    // Update review details
     review.rating = rating;
     review.body = body;
 
-    // Save the updated review
+    // Save the updated review and hotel
     await review.save();
+    await hotel.save();
 
     req.flash('success', 'Successfully updated the review');
     res.redirect(`/hotels/${hotelId}`);
 }));
+
+
+
 
 app.delete('/hotels/:hotelId/:reviewId/reviews', isLogin, isAuthorReview, catchAsync(async (req, res, next) => {
     const { hotelId, reviewId } = req.params;
 
     // Find the hotel by ID
     const hotel = await Hotel.findById(hotelId);
-
+    const review1=await Review.findById(reviewId);
+    hotel.ratingSum-=review1.rating;
+    //hotel.reviewCount[review1.rating]--;
+    hotel.ratingCount.set(review1.rating.toString(), hotel.ratingCount.get(review1.rating.toString()) - 1);
     if (!hotel) {
         req.flash('error', 'No such hotel found');
         return res.redirect('/hotels');
@@ -569,11 +696,25 @@ app.get('/user/:id', async (req, res) => {
             populate: {
                 path: 'reviews'
             }
+        })
+        .populate({
+            path: 'bookings',
+            populate: { path: 'hotel' } 
         });
-    //console.log(user.reviews);
     res.render('user/show', { user });
 });
 
+
+
+app.get('/user/:id/bookings',async(req,res)=>{
+    const { id } = req.params;
+    const user = await User.findById(id)
+        .populate({
+            path: 'bookings',
+            populate: { path: 'hotel' } 
+        });
+    res.render('user/booking', { user });
+})
 app.all('*', (req, res, next) => {
     next(new AppError('Page not found', 404));
 });

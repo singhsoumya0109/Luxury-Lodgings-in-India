@@ -155,31 +155,28 @@
 </style>
 <div class="delete-user">
     <h1>Hello <%= user.username %></h1>
-    <form action="/users/<%= user._id %>?_method=DELETE" method="POST">
+    <!-- <form action="/users/<%= user._id %>?_method=DELETE" method="POST">
         <button class="btn btn-sm btn-danger delete-btn">Delete account</button>
-    </form>
+    </form> -->
 </div>
 <h3>Number of hotels you own: <%= user.hotels.length %></h3>
 
 <div class="row">
     <% 
-        // Calculate the average rating for each hotel
-        user.hotels.forEach(hotel => {
-            let sum = 0;
-            hotel.reviews.forEach(review => {
-                sum += review.rating;
-            });
-            hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
-        });
+    // Calculate the average rating for each hotel using ratingSum
+    user.hotels.forEach(hotel => {
+        hotel.averageRating = hotel.reviews.length ? hotel.ratingSum / hotel.reviews.length : 0;
+    });
 
-        // Sort hotels by average rating in descending order and then by number of reviews in descending order
-        user.hotels.sort((a, b) => {
-            if (b.averageRating === a.averageRating) {
-                return b.reviews.length - a.reviews.length;
-            }
-            return b.averageRating - a.averageRating;
-        });
+    // Sort hotels by average rating in descending order and then by number of reviews in descending order
+    user.hotels.sort((a, b) => {
+        if (b.averageRating === a.averageRating) {
+            return b.reviews.length - a.reviews.length;
+        }
+        return b.averageRating - a.averageRating;
+    });
     %>
+
     <% for(let it of user.hotels) { %>
         <div class="col-md-4">
             <div class="card">
@@ -208,7 +205,8 @@
                     <a href="/hotels/<%= it._id %>">
                         <h6>Average Rating (<%= it.reviews.length %> ratings)</h6>
                     </a>
-                    <h6><%= it.averageRating.toFixed(2) %> / 5</h6> <!-- Display the average with 2 decimal places -->
+                    <h6><%= (it.ratingSum / it.reviews.length).toFixed(2) %> / 5</h6>
+ <!-- Display the average with 2 decimal places -->
                 <% } else { %>
                     <h6>Average Rating</h6>
                     <h6>No reviews yet</h6>
@@ -217,6 +215,7 @@
         </div>
     <% } %>
 </div>
+
 
 <h3>Number of reviews done: <%= user.reviews.length %></h3>
 

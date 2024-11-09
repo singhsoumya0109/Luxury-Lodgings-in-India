@@ -20,6 +20,12 @@ const UserSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Hotel'
         }
+    ],
+    bookings:[
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Booking'
+        }
     ]
 });
 

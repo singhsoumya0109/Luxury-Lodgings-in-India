@@ -12,7 +12,7 @@ const HotelSchema = new Schema(
             required: true,
             min: [0, 'Price must be a non-negative number.']
         },
-        images:[
+        images: [
             {
                 url: {
                     type: String,
@@ -41,7 +41,33 @@ const HotelSchema = new Schema(
                 type: Schema.Types.ObjectId,
                 ref: 'Review'
             }
-        ]
+        ],
+        bookings: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Booking'
+            }
+        ],
+        totalRooms: {
+            type: Number,
+            required: true,
+            min: [1, 'Total rooms must be at least 1.']
+        },
+        currentlyOccupied: {
+            type: Number,
+            default: 0,
+            min: [0, 'Occupied rooms cannot be negative.']
+        },
+        ratingSum: {
+            type: Number,
+            default: 0,
+            min: [0, 'Rating sum cannot be negative.']
+        },
+        ratingCount: {
+            type: Map,
+            of: Number,
+            default: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 }
+        }
     }
 );
 

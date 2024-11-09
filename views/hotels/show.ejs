@@ -151,6 +151,20 @@
         .edit-submit {
             margin-top: 10px;
         }
+        .booking
+        {
+            border:1px solid black ;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .booking-history
+        {
+            border:1px solid black ;
+            padding: 10px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
 
         @media (min-width: 768px) {
             .rating-container {
@@ -189,52 +203,150 @@
     
     <h4>Description</h4>
     <p><%= hotel.description %></p>
-    <h6 class="text-muted">Owned by <%= hotel.author.username %><% if(user && hotel.author.equals(user._id)){%>  (You)<% } %></h6>
     <h5>Price: <%= hotel.price %></h5>
     <% if(user && hotel.author.equals(user._id)){ %>
     <p>
         <a href="/hotels/<%= hotel._id %>/edit" class="button">Edit</a>
     </p>
-    <form action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
+    <!-- <form action="/hotels/<%= hotel._id %>?_method=DELETE" method="POST">
         <button class="btn btn-sm btn-danger">Delete</button>
-    </form>
+    </form> -->
     <%} %>
+    <% if(user){ %>
+    <div class="booking-history">
+        
+            <% if(hotel.author.equals(user._id)){ %>
+                <h1>Bookings for your hotel</h1>
+                <div class="list-group mt-4">
+                    <% if (hotel.bookings.length > 0) { %>
+                        <% hotel.bookings.forEach(booking => { %>
+                            <div class="list-group-item mb-3 border rounded p-4">
+                                <h5 class="mb-2">
+                                    <%= booking.author.username %>
+                                    <% if (booking.author._id.equals(user._id)) { %>
+                                        <span class="badge bg-warning text-dark ms-2">Your Booking</span>
+                                    <% } %>
+                                </h5>
+                                <p><strong>Check-in:</strong> <%= booking.checkin.toDateString() %></p>
+                                <p><strong>Check-out:</strong> <%= booking.checkout.toDateString() %></p>
+                                <p><strong>Booking Price:</strong> <%= booking.price %></p>
+                                <p><strong>Booked On:</strong> <%= booking.createdAt.toDateString() %></p>
+                                <p><strong>Rooms:</strong> <%= booking.rooms %></p>
+                                <p><strong>Adults:</strong> <%= booking.adults %></p>
+                                <p><strong>Children:</strong> <%= booking.children %></p>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">No bookings found for this hotel.</p>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <h1>Your Bookings</h1>
+                <div class="list-group mt-4">
+                    <% let userBookings = hotel.bookings.filter(booking => booking.author._id.equals(user._id)); %>
+                    <% if (userBookings.length > 0) { %>
+                        <% userBookings.forEach(booking => { %>
+                            <div class="list-group-item mb-1 border rounded p-3">
+                                <p><strong>Check-in:</strong> <%= booking.checkin.toDateString() %></p>
+                                <p><strong>Check-out:</strong> <%= booking.checkout.toDateString() %></p>
+                                <p><strong>Booking Price:</strong> <%= booking.price %></p>
+                                <p><strong>Booked On:</strong> <%= booking.createdAt.toDateString() %></p>
+                                <p><strong>Rooms:</strong> <%= booking.rooms %></p>
+                                <p><strong>Adults:</strong> <%= booking.adults %></p>
+                                <p><strong>Children:</strong> <%= booking.children %></p>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">You have no bookings for this hotel.</p>
+                    <% } %>
+                </div>
+            <% } %>
+        
+        
+            
+    
+    </div>
+    <% } %>
+    
+    <div class="booking container mt-5">
+        <h1>Book Your Stay</h1>
+        <form action="/hotels/<%= hotel._id %>/bookings" method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="checkin_date" class="form-label">Check-in Date</label>
+                <input type="date" id="checkin_date" name="checkin" class="form-control" required>
+                <div class="invalid-feedback">Please provide a valid check-in date.</div>
+            </div>
+            <div class="mb-3">
+                <label for="checkout_date" class="form-label">Check-out Date</label>
+                <input type="date" id="checkout_date" name="checkout" class="form-control" required>
+                <div class="invalid-feedback">Please provide a valid check-out date.</div>
+            </div>
+            <div class="mb-3">
+                <label for="rooms" class="form-label">Rooms</label>
+                <input type="number" id="rooms" name="rooms" class="form-control" min="1" value="1" required>
+                <div class="invalid-feedback">Please provide the number of rooms.</div>
+            </div>
+            <div class="mb-3">
+                <label for="adults" class="form-label">Adults</label>
+                <input type="number" id="adults" name="adults" class="form-control" min="1" value="1" required>
+                <div class="invalid-feedback">Please provide the number of adults.</div>
+            </div>
+            <div class="mb-3">
+                <label for="children" class="form-label">Children</label>
+                <input type="number" id="children" name="children" class="form-control" min="0" value="0">
+                <div class="invalid-feedback">Please provide the number of children (can be 0).</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Book Now</button>
+        </form>
+    </div>
+    
+
+
+
+
+    <% if(!hasReviewed && !(user && hotel.author.equals(user._id))){ %>
+        <div class="addReview">
+            <h4>Add a review</h4>
+            <form action="/hotels/<%= hotel._id %>/reviews" method="POST" class="mb-3">
+                <div class="mb-3 slider-container">
+                    <label for="rating" class="form-label">Rating (out of 5)</label>
+                    <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="rating" oninput="updateRatingValue(this)">
+                    <span id="ratingValue" class="rating-value">4</span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="body">Review</label>
+                    <textarea class="form-control" name="review[body]" id="body" cols="30" rows="5" required></textarea>
+                </div>
+                <button class="btn btn-success">Submit</button>
+            </form>
+        </div>
+        <% }else if(hasReviewed){ %>
+            <p>You have already reviewed</p>
+        <% }else{ %>
+            <p>You cannot review your own hotel</p>
+        <% } %>
     <div class="showReview">
         <% if(hotel.reviews.length) { %>
             <h4>Reviews (<%= hotel.reviews.length %> ratings)</h4>
             <% 
-                let sum = 0;
-                let ratingCounts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-                hotel.reviews.sort((a, b) => b.rating - a.rating); // Sort reviews in descending order of rating
-                for(let review of hotel.reviews) {
-                    sum += review.rating;
-                    ratingCounts[review.rating]++;
-                }
-                let average = sum / hotel.reviews.length;
+                let average = hotel.ratingSum / hotel.reviews.length;
+                let sortedRatings = ['5', '4', '3', '2', '1'].map(star => ({
+                    star,
+                    count: hotel.ratingCount.get(star) || 0 // Default to 0 if the star key doesn't exist
+                }));
             %>
+
             <h5>Average rating = <%= average.toFixed(2) %> / 5</h5>
             <div class="rating-container">
-                <div class="rating-card">
-                    <p>5 stars</p>
-                    <p class="rating-value1"><%= ratingCounts[5] %></p>
-                </div>
-                <div class="rating-card">
-                    <p>4 stars</p>
-                    <p class="rating-value1"><%= ratingCounts[4] %></p>
-                </div>
-                <div class="rating-card">
-                    <p>3 stars</p>
-                    <p class="rating-value1"><%= ratingCounts[3] %></p>
-                </div>
-                <div class="rating-card">
-                    <p>2 stars</p>
-                    <p class="rating-value1"><%= ratingCounts[2] %></p>
-                </div>
-                <div class="rating-card">
-                    <p>1 star</p>
-                    <p class="rating-value1"><%= ratingCounts[1] %></p>
-                </div>
+                <% sortedRatings.forEach(({ star, count }) => { %>
+                    <div class="rating-card">
+                        <p><%= star %> stars</p>
+                        <p class="rating-value1"><%= count %></p>
+                    </div>
+                <% }); %>
             </div>
+
+
             <ul class="review-list">
                 <% hotel.reviews.forEach(review => { %>
                     <li class="review-item">
@@ -268,27 +380,7 @@
             <p>No reviews yet. <% if(!(user && hotel.author.equals(user._id))){ %>Be the first one!!! <% } %></p>
         <% } %>
     </div>
-    <% if(!hasReviewed && !(user && hotel.author.equals(user._id))){ %>
-    <div class="addReview">
-        <h4>Add a review</h4>
-        <form action="/hotels/<%= hotel._id %>/reviews" method="POST" class="mb-3">
-            <div class="mb-3 slider-container">
-                <label for="rating" class="form-label">Rating (out of 5)</label>
-                <input type="range" class="form-range" min="1" max="5" name="review[rating]" id="rating" oninput="updateRatingValue(this)">
-                <span id="ratingValue" class="rating-value">4</span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="body">Review</label>
-                <textarea class="form-control" name="review[body]" id="body" cols="30" rows="5" required></textarea>
-            </div>
-            <button class="btn btn-success">Submit</button>
-        </form>
-    </div>
-    <% }else if(hasReviewed){ %>
-        <p>You have already reviewed</p>
-    <% }else{ %>
-        <p>You cannot review your own hotel</p>
-    <% } %>
+    
     <script>
         function updateRatingValue(slider) {
             const ratingValue = document.getElementById('ratingValue');
@@ -318,6 +410,27 @@
             const offset = value * sliderWidth + 150;
             ratingValue.style.left = `calc(${offset}px - 50%)`;
         }
+
+        
+        
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                const forms = document.getElementsByClassName('needs-validation');
+                Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+         // Function to get today's date in 'YYYY-MM-DD' format
+    
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
