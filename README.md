@@ -2,6 +2,8 @@
 
 LuxuryLodgings is a web application designed to help travelers find the best offers on hotels and resorts across India. Users can browse reviews, compare prices, and make informed decisions. Hotel owners can also advertise their properties, reaching a broader audience and boosting their bookings.
 
+Live link- [https://luxury-lodgings-in-india.onrender.com/](https://luxury-lodgings-in-india.onrender.com/)
+
 ## Preview
 Homepage
 ![Homepage](Images/Home-page.png)
