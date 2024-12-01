@@ -257,22 +257,86 @@ app.get('/', (req, res) => {
 
 
 
+// app.get('/hotels', catchAsync(async (req, res) => {
+//     const { search, location, minPrice, maxPrice, sortBy = 'rating-desc' } = req.query;
+//     let query = {};
+
+    
+//     if (search) {
+//         const hotels = await Hotel.find({});
+//         const searcher = new FuzzySearch(hotels, ['title'], {
+//             caseSensitive: false,
+//             sort: true
+//         });
+//         query = { _id: { $in: searcher.search(search).map(hotel => hotel._id) } };
+//     }
+
+//     if (location) {
+//         query.location = { $regex: location, $options: 'i' };
+//     }
+
+//     if (minPrice) {
+//         query.price = { $gte: Number(minPrice) };
+//     }
+
+//     if (maxPrice) {
+//         if (!query.price) {
+//             query.price = {};
+//         }
+//         query.price.$lte = Number(maxPrice);
+//     }
+
+//     const hotels = await Hotel.find(query).populate('reviews');
+
+
+//     if (hotels.length === 0) {
+//         req.flash('error', 'No hotels found');
+//         return res.redirect('/hotels');
+//     }
+
+    
+
+//     const [criteria, order] = sortBy.split('-');
+//     hotels.sort((a, b) => {
+//         let comparison = 0;
+//         if (criteria === 'rating') {
+//             const avgRatingA = a.reviews.length ? a.ratingSum / a.reviews.length : 0;
+//             const avgRatingB = b.reviews.length ? b.ratingSum / b.reviews.length : 0;
+//             comparison = avgRatingB - avgRatingA;
+//         } else if (criteria === 'price') {
+//             comparison = b.price - a.price;
+//         } else if (criteria === 'reviews') {
+//             comparison = b.reviews.length - a.reviews.length;
+//         }
+
+//         return order === 'asc' ? comparison * -1 : comparison;
+//     });
+
+
+//     res.render('hotels/index', { hotels, query: req.query });
+// }));
+
+
+
 app.get('/hotels', catchAsync(async (req, res) => {
     const { search, location, minPrice, maxPrice, sortBy = 'rating-desc' } = req.query;
     let query = {};
 
-    
-    if (search) {
+    // Trim the input query fields to remove unnecessary spaces
+    const trimmedSearch = search?.trim();
+    const trimmedLocation = location?.trim();
+
+    if (trimmedSearch) {
         const hotels = await Hotel.find({});
         const searcher = new FuzzySearch(hotels, ['title'], {
             caseSensitive: false,
             sort: true
         });
-        query = { _id: { $in: searcher.search(search).map(hotel => hotel._id) } };
+        query = { _id: { $in: searcher.search(trimmedSearch).map(hotel => hotel._id) } };
     }
 
-    if (location) {
-        query.location = { $regex: location, $options: 'i' };
+    if (trimmedLocation) {
+        query.location = { $regex: trimmedLocation, $options: 'i' };
     }
 
     if (minPrice) {
@@ -288,42 +352,25 @@ app.get('/hotels', catchAsync(async (req, res) => {
 
     const hotels = await Hotel.find(query).populate('reviews');
 
-
     if (hotels.length === 0) {
         req.flash('error', 'No hotels found');
         return res.redirect('/hotels');
     }
 
-    // hotels.forEach(hotel => {
-    //     let sum = 0;
-    //     hotel.reviews.forEach(review => {
-    //         sum += review.rating;
-    //     });
-    //     hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
-    // });
-
-    // const [criteria, order] = sortBy.split('-');
-    // hotels.sort((a, b) => {
-    //     let comparison = 0;
-    //     if (criteria === 'rating') {
-    //         comparison = b.averageRating - a.averageRating;
-    //     } else if (criteria === 'price') {
-    //         comparison = b.price - a.price;
-    //     } else if (criteria === 'reviews') {
-    //         comparison = b.reviews.length - a.reviews.length;
-    //     }
-
-    //     return order === 'asc' ? comparison * -1 : comparison;
-    // });
-
+    // Calculate the average rating for each hotel
+    hotels.forEach(hotel => {
+        let sum = 0;
+        hotel.reviews.forEach(review => {
+            sum += review.rating;
+        });
+        hotel.averageRating = hotel.reviews.length ? sum / hotel.reviews.length : 0;
+    });
 
     const [criteria, order] = sortBy.split('-');
     hotels.sort((a, b) => {
         let comparison = 0;
         if (criteria === 'rating') {
-            const avgRatingA = a.reviews.length ? a.ratingSum / a.reviews.length : 0;
-            const avgRatingB = b.reviews.length ? b.ratingSum / b.reviews.length : 0;
-            comparison = avgRatingB - avgRatingA;
+            comparison = b.averageRating - a.averageRating;
         } else if (criteria === 'price') {
             comparison = b.price - a.price;
         } else if (criteria === 'reviews') {
@@ -333,10 +380,8 @@ app.get('/hotels', catchAsync(async (req, res) => {
         return order === 'asc' ? comparison * -1 : comparison;
     });
 
-
     res.render('hotels/index', { hotels, query: req.query });
 }));
-
 
 
 

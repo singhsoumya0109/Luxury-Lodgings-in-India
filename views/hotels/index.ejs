@@ -33,11 +33,8 @@
         font-size: 15px;
     }
     .drop-down, .search-bar {
-
         margin: 2px;
     }
-
-    
 
     .drop-down select {
         background-color: white; 
@@ -46,7 +43,6 @@
         cursor: pointer;
     }
 
-    
     .search-bar form {
         display: flex;
         align-items: center;
@@ -84,6 +80,7 @@
         height: auto;
         min-height: 220px;
     }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .search-bar input[type="text"], .search-bar input[type="number"], .search-bar button {
@@ -97,44 +94,63 @@
             width: 100%;
             margin-bottom: 10px;
         }
-        
     }
-
+    .navbar1 {
+        margin: 10px;
+    }
     .navbar h1 a {
         color: black !important;
+    }
+
+    /* Collapse button styling */
+    .navbar-toggler {
+        border: none;
+    }
+    .navbar-toggler-icon {
+        background-color: #28a745; /* Customize the color of the toggle icon */
     }
 </style>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-<nav class="navbar navbar-light bg-light justify-content-between">
+<nav class="navbar navbar-light bg-light justify-content-between navbar1">
     <h1><a href="/hotels">All Hotels</a></h1>
-    <div class="drop-down">
-        <label for="sort-by">Sort by: </label>
-        <select id="sort-by" class="form-control">
-            <option value="rating-desc" <%= query.sortBy === 'rating-desc' ? 'selected' : '' %>>Rating: High to Low</option>
-            <option value="rating-asc" <%= query.sortBy === 'rating-asc' ? 'selected' : '' %>>Rating: Low to High</option>
-            <option value="price-desc" <%= query.sortBy === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
-            <option value="price-asc" <%= query.sortBy === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
-            <option value="reviews-desc" <%= query.sortBy === 'reviews-desc' ? 'selected' : '' %>>Popularity: High to Low</option>
-            <option value="reviews-asc" <%= query.sortBy === 'reviews-asc' ? 'selected' : '' %>>Popularity: Low to High</option>
-        </select>
-    </div>
-    <div class="search-bar">
-        <form action="/hotels" method="GET" class="form-inline">
-            <input type="text" name="search" placeholder="Search by name" value="<%= query.search || '' %>" class="form-control">
-            <input type="text" name="location" placeholder="Location" value="<%= query.location || '' %>" class="form-control">
-            <input class="min-max form-control" type="number" name="minPrice" placeholder="Min Price" value="<%= query.minPrice || '' %>">
-            <input class="form-control" type="number" name="maxPrice" placeholder="Max Price" value="<%= query.maxPrice || '' %>">
-            <button type="submit" class="btn btn-success">Search</button>
-        </form>
+
+    <!-- Button to toggle collapse -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapseOptions" aria-controls="collapseOptions" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Collapsible container for search and sort options -->
+    <div class="collapse navbar-collapse" id="collapseOptions">
+        <div class="drop-down">
+            <label for="sort-by">Sort by: </label>
+            <select id="sort-by" class="form-control">
+                <option value="rating-desc" <%= query.sortBy === 'rating-desc' ? 'selected' : '' %>>Rating: High to Low</option>
+                <option value="rating-asc" <%= query.sortBy === 'rating-asc' ? 'selected' : '' %>>Rating: Low to High</option>
+                <option value="price-desc" <%= query.sortBy === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+                <option value="price-asc" <%= query.sortBy === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+                <option value="reviews-desc" <%= query.sortBy === 'reviews-desc' ? 'selected' : '' %>>Popularity: High to Low</option>
+                <option value="reviews-asc" <%= query.sortBy === 'reviews-asc' ? 'selected' : '' %>>Popularity: Low to High</option>
+            </select>
+        </div>
+
+        <div class="search-bar">
+            <form action="/hotels" method="GET" class="form-inline">
+                <input type="text" name="search" placeholder="Search by name" value="<%= query.search || '' %>" class="form-control">
+                <input type="text" name="location" placeholder="Location" value="<%= query.location || '' %>" class="form-control">
+                <input class="min-max form-control" type="number" name="minPrice" placeholder="Min Price" value="<%= query.minPrice || '' %>">
+                <input class="form-control" type="number" name="maxPrice" placeholder="Max Price" value="<%= query.maxPrice || '' %>">
+                <button type="submit" class="btn btn-success">Search</button>
+            </form>
+        </div>
     </div>
 </nav>
 
 <div class="container">
     <div class="row">
         <% for(let it of hotels) { %>
-            <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
                 <div class="card">
                     <div id="carouselExample<%= it._id %>" class="carousel slide carousel-container">
                         <div class="carousel-inner">
@@ -174,9 +190,6 @@
         <% } %>
     </div>
 </div>
-
-
-
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
